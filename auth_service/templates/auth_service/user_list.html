@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users - {{ app.name }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .search-container { margin-bottom: 20px; }
+        input[type="text"] { padding: 5px; width: 200px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .pagination { margin-top: 20px; }
+        .pagination a { padding: 8px 12px; text-decoration: none; color: #007bff; }
+        .pagination a.active { background-color: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Users for {{ app.name }}</h1>
+    {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="search-container">
+        <form method="get">
+            <input type="text" name="search" value="{{ search_query }}" placeholder="Search users...">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <table>
+        <tr>
+            <th>User ID</th>
+            <th>Email</th>
+            <th>Name</th>
+            <th>Auth Method</th>
+            <th>Last Login</th>
+            <th>Has Logged In</th>
+            <th>Created At</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user.user_id }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.name|default:"N/A" }}</td>
+            <td>{{ user.auth_method }}</td>
+            <td>{{ user.last_login|default:"Never" }}</td>
+            <td>{{ user.has_logged_in|yesno:"Yes,No" }}</td>
+            <td>{{ user.created_at }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">No users found</td></tr>
+        {% endfor %}
+    </table>
+    <div class="pagination">
+        {% if users.has_previous %}
+            <a href="?page=1&search={{ search_query }}">First</a>
+            <a href="?page={{ users.previous_page_number }}&search={{ search_query }}">Previous</a>
+        {% endif %}
+        <span>Page {{ users.number }} of {{ users.paginator.num_pages }}</span>
+        {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}&search={{ search_query }}">Next</a>
+            <a href="?page={{ users.paginator.num_pages }}&search={{ search_query }}">Last</a>
+        {% endif %}
+    </div>
+    <a href="{% url 'add_user_dashboard' app.app_id %}">Add User</a>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .app-list { margin-top: 20px; }
+        .app-item { margin-bottom: 10px; padding: 10px; border: 1px solid #eee; }
+        .app-item a { text-decoration: none; color: #007bff; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>Your Applications</h1>
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="app-list">
+        {% if apps %}
+            {% for app in apps %}
+                <div class="app-item">
+                    <p><strong>App Name:</strong> {{ app.name }}</p>
+                    <p><strong>App ID:</strong> {{ app.app_id }}</p>
+                    <p><strong>Created At:</strong> {{ app.created_at }}</p>
+                    <a href="{% url 'user_list_dashboard' app.app_id %}">Manage Users</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No applications found. Create one to get started!</p>
+        {% endif %}
+    </div>
+    <p><a href="{% url 'create_app_dashboard' %}">Create New App</a></p>
+    <p>
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" style="background: none; border: none; color: #007bff; cursor: pointer; font-size: 1em; padding: 0;">Logout</button>
+        </form>
+    </p>
+</body>
+</html>

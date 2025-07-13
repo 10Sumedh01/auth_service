@@ -1,0 +1,31 @@
+# Django
+*.log
+db.sqlite3
+/staticfiles/
+/media/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Editor settings
+.idea/
+.vscode/
