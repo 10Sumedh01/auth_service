@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create New App</title>
+    <title>App Details</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
-        form { margin-top: 20px; padding: 20px; border: 1px solid #eee; width: 300px; }
-        input[type="text"] { width: 100%; padding: 8px; margin-bottom: 10px; }
-        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; cursor: pointer; }
-        .errorlist { color: red; }
         .api-key-container {
             margin-top: 20px;
             padding: 15px;
@@ -45,32 +41,14 @@
     </style>
 </head>
 <body>
-    <h1>Create New Application</h1>
-    {% if messages %}
-        <ul>
-            {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
-    {% if not app_id %}
-    <form method="post">
-        {% csrf_token %}
-        <label for="name">Application Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
-        <button type="submit">Create App</button>
-    </form>
-    {% endif %}
-
-    {% if app_id and api_key %}
+    <h1>App Details for {{ app.name }}</h1>
+    
     <div class="api-key-container">
         <div class="api-key-header">Your API Key and App ID</div>
-        <p>Please store these securely. You will not be able to see them again.</p>
         
         <div class="api-key-value">
             <strong>App ID:</strong>
-            <span id="app-id" class="api-key-text">{{ app_id }}</span>
+            <span id="app-id" class="api-key-text">{{ app.app_id }}</span>
             <div class="api-key-actions">
                 <button onclick="toggleVisibility('app-id')">👁️</button>
                 <button onclick="copyToClipboard('app-id')">📋</button>
@@ -79,14 +57,13 @@
 
         <div class="api-key-value">
             <strong>API Key:</strong>
-            <span id="api-key" class="api-key-text">{{ api_key }}</span>
+            <span id="api-key" class="api-key-text">{{ api_key.key }}</span>
             <div class="api-key-actions">
                 <button onclick="toggleVisibility('api-key')">👁️</button>
                 <button onclick="copyToClipboard('api-key')">📋</button>
             </div>
         </div>
     </div>
-    {% endif %}
 
     <p><a href="{% url 'dashboard' %}">Back to Dashboard</a></p>
 

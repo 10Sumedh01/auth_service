@@ -17,16 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from auth_service.views import user_list_dashboard, add_user_dashboard, CustomLoginView, CustomSignupView, dashboard, create_app_dashboard
+from auth_service.views import home, user_list_dashboard, add_user_dashboard, CustomLoginView, CustomSignupView, dashboard, create_app_dashboard, app_details
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
+    path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('auth_api.urls')),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('signup/', CustomSignupView.as_view(), name='signup'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
     path('dashboard/', dashboard, name='dashboard'), # Root dashboard
+    path('dashboard/app/<str:app_id>/', app_details, name='app_details'),
     path('dashboard/<str:app_id>/users', user_list_dashboard, name='user_list_dashboard'),
     path('dashboard/<str:app_id>/users/add', add_user_dashboard, name='add_user_dashboard'),
     path('dashboard/create_app/', create_app_dashboard, name='create_app_dashboard'),

@@ -28,6 +28,7 @@
                     <p><strong>App ID:</strong> {{ app.app_id }}</p>
                     <p><strong>Created At:</strong> {{ app.created_at }}</p>
                     <a href="{% url 'user_list_dashboard' app.app_id %}">Manage Users</a>
+                    <a href="{% url 'app_details' app.app_id %}">View Details</a>
                 </div>
             {% endfor %}
         {% else %}

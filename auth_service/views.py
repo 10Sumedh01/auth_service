@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
@@ -9,6 +9,9 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView
 from auth_api.models import App, User, ApiKey
 import uuid
+
+def home(request):
+    return render(request, 'auth_service/home.html')
 
 class CustomLoginView(LoginView):
     template_name = 'auth_service/login.html'
@@ -50,18 +53,25 @@ def create_app_dashboard(request):
             messages.error(request, 'App name is required')
             return render(request, 'auth_service/create_app.html')
         try:
-            app_id = str(uuid.uuid4())
             app = App.objects.create(
-                app_id=app_id,
                 name=name,
                 developer=request.user
             )
-            ApiKey.objects.create(app=app)
+            api_key = ApiKey.objects.create(app=app)
             messages.success(request, f'App {name} created successfully!')
-            return redirect('dashboard')
+            return render(request, 'auth_service/create_app.html', {
+                'app_id': app.app_id,
+                'api_key': api_key.key
+            })
         except Exception as e:
             messages.error(request, f'Error creating app: {e}')
     return render(request, 'auth_service/create_app.html')
+
+@login_required
+def app_details(request, app_id):
+    app = get_object_or_404(App, app_id=app_id, developer=request.user)
+    api_key = ApiKey.objects.filter(app=app).first()
+    return render(request, 'auth_service/app_details.html', {'app': app, 'api_key': api_key})
 
 @login_required
 def user_list_dashboard(request, app_id):
