@@ -75,9 +75,9 @@ class OAuthCallbackView(APIView):
             # Store or update user
             user, _ = User.objects.get_or_create(
                 app=app,
-                user_id=user_id,
+                email=email,
                 defaults={
-                    'email': email,
+                    'user_id': user_id,
                     'name': name,
                     'auth_method': 'oauth',
                 }
@@ -87,7 +87,7 @@ class OAuthCallbackView(APIView):
 
             # Issue JWT
             token = RefreshToken.for_user(app.developer)  # Use developer for token
-            token['user_id'] = user_id
+            token['user_id'] = user.user_id
             token['email'] = email
             token['name'] = name
             return Response({'token': str(token.access_token)})
@@ -107,9 +107,9 @@ class CredentialsSignInView(APIView):
             if user:
                 user_obj, _ = User.objects.get_or_create(
                     app=app,
-                    user_id=str(user.id),
+                    email=email,
                     defaults={
-                        'email': email,
+                        'user_id': str(user.id),
                         'name': user.get_full_name(),
                         'auth_method': 'credentials',
                     }
@@ -133,9 +133,9 @@ class MagicLinkView(APIView):
             email = request.data.get('email')
             user, _ = User.objects.get_or_create(
                 app=app,
-                user_id=str(uuid.uuid4()),
+                email=email,
                 defaults={
-                    'email': email,
+                    'user_id': str(uuid.uuid4()),
                     'name': '',
                     'auth_method': 'magic_link',
                 }
@@ -144,7 +144,7 @@ class MagicLinkView(APIView):
             token['user_id'] = user.user_id
             token['email'] = email
             token['name'] = user.name
-            link = f"{request.scheme}://{request.get_host()}/api/auth/verify/{app_id}?token={token.access_access_token}"
+            link = f"{request.scheme}://{request.get_host()}/api/auth/verify/{app_id}?token={str(token.access_token)}"
             send_mail(
                 'Sign In to Your App',
                 f'Click to sign in: {link}',
@@ -313,8 +313,8 @@ def add_user_dashboard(request, app_id):
                 return render(request, 'auth_api/add_user.html', {'app': app})
             user, created = User.objects.get_or_create(
                 app=app,
-                user_id=str(uuid.uuid4()),
-                defaults={'email': email, 'name': name, 'auth_method': auth_method}
+                email=email,
+                defaults={'user_id': str(uuid.uuid4()), 'name': name, 'auth_method': auth_method}
             )
             if created:
                 messages.success(request, f'User {email} added successfully')

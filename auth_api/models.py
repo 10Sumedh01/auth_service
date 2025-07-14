@@ -42,7 +42,7 @@ class User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['app', 'user_id']  # Unique user_id per app
+        unique_together = ['app', 'email']  # Unique email per app
 
     def __str__(self):
         return f"{self.email} ({self.app.name})"
