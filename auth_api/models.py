@@ -21,10 +21,12 @@ class User(models.Model):
     user_id = models.CharField(max_length=100)
     email = models.EmailField()
     name = models.CharField(max_length=200, blank=True, default='')
+    password = models.CharField(max_length=128)  # Field to store hashed password
     auth_method = models.CharField(max_length=50, choices=[
         ('oauth', 'OAuth'),
         ('credentials', 'Credentials'),
         ('magic_link', 'Email Magic Link'),
+        ('manual', 'Manual Entry'),
     ], default='credentials')
     last_login = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

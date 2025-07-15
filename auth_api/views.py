@@ -1,12 +1,5 @@
-from django.conf import settings
-from django.core.mail import send_mail
-from django.contrib.auth import authenticate
-from django.urls import reverse
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import BaseAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+import json
+from django.contrib.auth.hashers import make_password, check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from allauth.socialaccount.models import SocialToken
 from .models import App, User, ApiKey, OAuthConfig
@@ -18,15 +11,36 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.core.mail import send_mail
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.permissions import IsAuthenticated
 # Custom authentication for API keys
 class ApiKeyAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        key = request.headers.get('Authorization', '').replace('Bearer ', '')
+        auth_header = request.headers.get('Authorization', '')
+        # Support both 'Bearer' and 'ApiKey' schemes for flexibility
+        if auth_header.startswith('Bearer '):
+            key = auth_header.replace('Bearer ', '')
+        elif auth_header.startswith('ApiKey '):
+            key = auth_header.replace('ApiKey ', '')
+        else:
+            return None  # Not an authentication type we can handle
+
         try:
-            api_key = ApiKey.objects.get(key=key, is_active=True)
-            return (api_key.app.developer, None)
-        except ApiKey.DoesNotExist:
-            raise AuthenticationFailed('Invalid or inactive API key')
+            # Use select_related to optimize the query
+            api_key = ApiKey.objects.select_related('app__developer').get(key=key, is_active=True)
+            
+            # Attach the app object to the request for easy access in views
+            request.app = api_key.app
+            
+            # Return the developer as the user and the key as auth info
+            return (api_key.app.developer, api_key)
+        except (ApiKey.DoesNotExist, IndexError):
+            # Let other authentication methods try if key is invalid
+            return None
 
 # OAuth Redirect: Initiates OAuth flow (e.g., GitHub, Google)
 class OAuthRedirectView(APIView):
@@ -73,66 +87,120 @@ class OAuthCallbackView(APIView):
             name = user_data.get('name', '')
 
             # Store or update user
-            user, _ = User.objects.get_or_create(
+            user, _ = User.objects.update_or_create(
                 app=app,
                 email=email,
                 defaults={
                     'user_id': user_id,
                     'name': name,
                     'auth_method': 'oauth',
+                    'password': make_password(None) # Set a non-usable password for OAuth users
                 }
             )
             user.last_login = timezone.now()
             user.save()
 
             # Issue JWT
-            token = RefreshToken.for_user(app.developer)  # Use developer for token
-            token['user_id'] = user.user_id
-            token['email'] = email
-            token['name'] = name
-            return Response({'token': str(token.access_token)})
+            refresh = RefreshToken()
+            refresh['app_id'] = app.app_id
+            refresh['user_id'] = user.user_id
+            refresh['email'] = user.email
+            return Response({'token': str(refresh.access_token)})
         except (App.DoesNotExist, OAuthConfig.DoesNotExist):
             return Response({'error': 'Invalid app or provider'}, status=404)
         except Exception as e:
             return Response({'error': str(e)}, status=500)
 
-# Credentials Sign-In: Handles email/password, stores user, issues JWT
+# Credentials Sign-Up: Handles registration and login
+class CredentialsSignUpView(APIView):
+    authentication_classes = [ApiKeyAuthentication]
+
+    def post(self, request, app_id):
+        if not hasattr(request, 'app') or request.app.app_id != app_id:
+            raise AuthenticationFailed('Invalid or inactive API key for this app')
+
+        email = request.data.get('email')
+        password = request.data.get('password')
+        name = request.data.get('name', '')
+
+        if not email or not password:
+            return Response({'error': 'Email and password are required'}, status=400)
+
+        try:
+            # Check if user already exists
+            user = User.objects.get(app=request.app, email=email)
+            
+            # User exists, check password to log them in
+            if check_password(password, user.password):
+                user.last_login = timezone.now()
+                user.save()
+                
+                # Issue JWT
+                refresh = RefreshToken()
+                refresh['app_id'] = request.app.app_id
+                refresh['user_id'] = user.user_id
+                refresh['email'] = user.email
+                return Response({'token': str(refresh.access_token)})
+            else:
+                return Response({'error': 'Invalid credentials'}, status=401)
+
+        except User.DoesNotExist:
+            # User does not exist, create a new one
+            user = User.objects.create(
+                app=request.app,
+                email=email,
+                name=name,
+                password=make_password(password), # Hash the password
+                auth_method='credentials',
+                user_id=str(uuid.uuid4())
+            )
+            user.last_login = timezone.now()
+            user.save()
+
+            # Issue JWT
+            refresh = RefreshToken()
+            refresh['app_id'] = request.app.app_id
+            refresh['user_id'] = user.user_id
+            refresh['email'] = user.email
+            return Response({'token': str(refresh.access_token)}, status=201)
+
+# Credentials Sign-In: Handles email/password login
 class CredentialsSignInView(APIView):
     authentication_classes = [ApiKeyAuthentication]
     def post(self, request, app_id):
+        if not hasattr(request, 'app') or request.app.app_id != app_id:
+            raise AuthenticationFailed('Invalid or inactive API key for this app')
+
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            return Response({'error': 'Email and password are required'}, status=400)
+
         try:
-            # Ensure the app from the API key matches the app_id in the URL
-            if request.user.app.app_id != app_id:
-                return Response({'error': 'API key does not match the app'}, status=403)
-            
-            app = App.objects.get(app_id=app_id)
-            email = request.data.get('email')
-            password = request.data.get('password')
-            user = authenticate(request, username=email, password=password)
-            if user:
-                user_obj, _ = User.objects.get_or_create(
-                    app=app,
-                    email=email,
-                    defaults={
-                        'user_id': str(user.id),
-                        'name': user.get_full_name(),
-                        'auth_method': 'credentials',
-                    }
-                )
-                user_obj.last_login = timezone.now()
-                user_obj.save()
-                token = RefreshToken.for_user(user)
-                token['user_id'] = user_obj.user_id
-                token['email'] = email
-                token['name'] = user_obj.name
-                return Response({'token': str(token.access_token)})
+            user = User.objects.get(app=request.app, email=email)
+            if check_password(password, user.password):
+                user.last_login = timezone.now()
+                user.save()
+                
+                # Issue JWT
+                refresh = RefreshToken()
+                refresh['app_id'] = request.app.app_id
+                refresh['user_id'] = user.user_id
+                refresh['email'] = user.email
+                return Response({'token': str(refresh.access_token)})
+            else:
+                return Response({'error': 'Invalid credentials'}, status=401)
+        except User.DoesNotExist:
             return Response({'error': 'Invalid credentials'}, status=401)
-        except App.DoesNotExist:
-            return Response({'error': 'Invalid app'}, status=404)
 
 # Magic Link: Sends email link, verifies, issues JWT
 class MagicLinkView(APIView):
+    authentication_classes = [ApiKeyAuthentication]
     def post(self, request, app_id):
+        if not hasattr(request, 'app') or request.app.app_id != app_id:
+            raise AuthenticationFailed('Invalid or inactive API key for this app')
+            
         try:
             app = App.objects.get(app_id=app_id)
             email = request.data.get('email')
@@ -143,13 +211,16 @@ class MagicLinkView(APIView):
                     'user_id': str(uuid.uuid4()),
                     'name': '',
                     'auth_method': 'magic_link',
+                    'password': make_password(None) # Set a non-usable password
                 }
             )
-            token = RefreshToken.for_user(app.developer)
-            token['user_id'] = user.user_id
-            token['email'] = email
-            token['name'] = user.name
-            link = f"{request.scheme}://{request.get_host()}/api/auth/verify/{app_id}?token={str(token.access_token)}"
+            
+            refresh = RefreshToken()
+            refresh['app_id'] = app.app_id
+            refresh['user_id'] = user.user_id
+            refresh['email'] = user.email
+            
+            link = f"{request.scheme}://{request.get_host()}/api/auth/verify/{app_id}?token={str(refresh.access_token)}"
             send_mail(
                 'Sign In to Your App',
                 f'Click to sign in: {link}',
@@ -167,31 +238,22 @@ class MagicLinkVerifyView(APIView):
         try:
             token = request.query_params.get('token')
             app = App.objects.get(app_id=app_id)
-            # Verify JWT (simplified; use simplejwt's token verification)
+            
+            # Verify JWT
             from rest_framework_simplejwt.tokens import AccessToken
             token_obj = AccessToken(token)
             user_id = token_obj['user_id']
+            
             user = User.objects.get(app=app, user_id=user_id)
             user.last_login = timezone.now()
             user.save()
+            
+            # Return the same token as it's now verified
             return Response({'token': str(token)})
         except (App.DoesNotExist, User.DoesNotExist):
             return Response({'error': 'Invalid app or user'}, status=404)
         except Exception:
             return Response({'error': 'Invalid token'}, status=401)
-
-# User List: Fetches users for an app (dashboard and API)
-class UserListView(APIView):
-    authentication_classes = [ApiKeyAuthentication]
-    def get(self, request, app_id):
-        try:
-            app = App.objects.get(app_id=app_id)
-            users = User.objects.filter(app=app).values(
-                'user_id', 'email', 'name', 'auth_method', 'last_login', 'created_at'
-            )
-            return Response(list(users))
-        except App.DoesNotExist:
-            return Response({'error': 'Invalid app'}, status=404)
 
 # App Management: Create and list apps for developers
 class AppListCreateView(APIView):
@@ -331,21 +393,34 @@ def add_user_dashboard(request, app_id):
         messages.error(request, 'Invalid app')
         return redirect('dashboard')
 
-# Add User: Allows adding a user to an app via API
-class AddUserView(APIView):
+# User Management: List and create users for an app
+class UserListView(APIView):
     authentication_classes = [ApiKeyAuthentication]
+
+    def get(self, request, app_id):
+        if not hasattr(request, 'app') or request.app.app_id != app_id:
+            raise AuthenticationFailed('Invalid or inactive API key for this app')
+            
+        try:
+            app = App.objects.get(app_id=app_id)
+            users = User.objects.filter(app=app).values(
+                'user_id', 'email', 'name', 'auth_method', 'last_login', 'created_at'
+            )
+            return Response(list(users))
+        except App.DoesNotExist:
+            return Response({'error': 'Invalid app'}, status=404)
+
     def post(self, request, app_id):
+        if not hasattr(request, 'app') or request.app.app_id != app_id:
+            raise AuthenticationFailed('Invalid or inactive API key for this app')
+
         try:
             app = App.objects.get(app_id=app_id)
             email = request.data.get('email')
             name = request.data.get('name', '')
-            auth_method = request.data.get('auth_method', 'manual')
-
+            
             if not email:
                 return Response({'error': 'Email is required'}, status=400)
-
-            if auth_method not in ['oauth', 'credentials', 'magic_link', 'manual']:
-                return Response({'error': 'Invalid authentication method'}, status=400)
 
             user, created = User.objects.get_or_create(
                 app=app,
@@ -353,7 +428,8 @@ class AddUserView(APIView):
                 defaults={
                     'user_id': str(uuid.uuid4()),
                     'name': name,
-                    'auth_method': auth_method
+                    'auth_method': 'manual',  # User created via API
+                    'password': make_password(None) # Set a non-usable password
                 }
             )
 
@@ -369,6 +445,8 @@ class AddUserView(APIView):
                 return Response({'error': 'User with this email already exists'}, status=409)
         except App.DoesNotExist:
             return Response({'error': 'Invalid app'}, status=404)
+
+
 
 # Check User Login: Checks if a user is logged in
 class CheckUserLoginView(APIView):
