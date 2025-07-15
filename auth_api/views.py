@@ -98,8 +98,13 @@ class OAuthCallbackView(APIView):
 
 # Credentials Sign-In: Handles email/password, stores user, issues JWT
 class CredentialsSignInView(APIView):
+    authentication_classes = [ApiKeyAuthentication]
     def post(self, request, app_id):
         try:
+            # Ensure the app from the API key matches the app_id in the URL
+            if request.user.app.app_id != app_id:
+                return Response({'error': 'API key does not match the app'}, status=403)
+            
             app = App.objects.get(app_id=app_id)
             email = request.data.get('email')
             password = request.data.get('password')
