@@ -18,10 +18,9 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True
 
     def get_success_url(self):
-        app = App.objects.filter(developer=self.request.user).first()
-        if app:
-            return reverse_lazy('dashboard')
-        return reverse_lazy('login') # Redirect to login if no app, or a generic dashboard
+        # Always redirect to the dashboard after a successful login.
+        # The dashboard view will handle showing apps or a prompt to create one.
+        return reverse_lazy('dashboard')
 
     def form_valid(self, form):
         messages.success(self.request, 'Login successful!')
