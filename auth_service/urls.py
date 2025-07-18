@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from auth_service.views import home, user_list_dashboard, add_user_dashboard, CustomLoginView, CustomSignupView, dashboard, create_app_dashboard, app_details
+from auth_service.views import home, user_list_dashboard, add_user_dashboard, delete_app, CustomLoginView, CustomSignupView, dashboard, create_app_dashboard, app_details
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -32,4 +32,5 @@ urlpatterns = [
     path('dashboard/<str:app_id>/users', user_list_dashboard, name='user_list_dashboard'),
     path('dashboard/<str:app_id>/users/add', add_user_dashboard, name='add_user_dashboard'),
     path('dashboard/create_app/', create_app_dashboard, name='create_app_dashboard'),
+    path('apps/<str:app_id>/delete/', delete_app, name='delete_app'),
 ]
