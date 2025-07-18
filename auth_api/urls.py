@@ -1,8 +1,7 @@
 from django.urls import path
 from .views import (
     OAuthRedirectView, OAuthCallbackView, CredentialsSignInView, CredentialsSignUpView,
-    MagicLinkView, MagicLinkVerifyView, UserListView,
-    AppListCreateView, ApiKeyListView, OAuthConfigView
+    MagicLinkView, MagicLinkVerifyView
 )
 
 urlpatterns = [
@@ -15,14 +14,14 @@ urlpatterns = [
     path('auth/callback/<str:provider>/<str:app_id>', OAuthCallbackView.as_view(), name='oauth_callback'),
     
     # User Management API
-    path('users/<str:app_id>', UserListView.as_view(), name='user_list'),
+    # path('users/<str:app_id>', UserListView.as_view(), name='user_list'),
     
     # App Management
-    path('apps/', AppListCreateView.as_view(), name='app_list_create'),
+    # path('apps/', AppListCreateView.as_view(), name='app_list_create'),
     
     # API Key Management
-    path('apps/<str:app_id>/api-keys', ApiKeyListView.as_view(), name='api_key_list'),
+    # path('apps/<str:app_id>/api-keys', ApiKeyListView.as_view(), name='api_key_list'),
     
     # OAuth Config Management
-    path('apps/<str:app_id>/oauth-configs', OAuthConfigView.as_view(), name='oauth_config'),
+    # path('apps/<str:app_id>/oauth-configs', OAuthConfigView.as_view(), name='oauth_config'),
 ]
