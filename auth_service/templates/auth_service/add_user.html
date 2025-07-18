@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
   <html lang="en">
   <head>
       <meta charset="UTF-8">
@@ -41,4 +41,399 @@
       </form>
       <a href="{% url 'user_list_dashboard' app.app_id %}">Back to Users</a>
   </body>
-  </html>
+  </html> {% endcomment %}
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User - {{ app.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .messages {
+            margin-bottom: 20px;
+        }
+        
+        .messages ul {
+            list-style: none;
+        }
+        
+        .messages li {
+            padding: 12px 16px;
+            margin: 5px 0;
+            border-radius: 8px;
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .messages li.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .auth-methods {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .auth-method {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .auth-method input[type="radio"] {
+            display: none;
+        }
+        
+        .auth-method label {
+            display: block;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .auth-method input[type="radio"]:checked + label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .auth-method label:hover {
+            background: #e9ecef;
+        }
+        
+        .auth-method input[type="radio"]:checked + label:hover {
+            background: #5a6fd8;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-group .help-text {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-align: center;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .dynamic-fields {
+            display: none;
+            margin-top: 20px;
+        }
+        
+        .dynamic-fields.active {
+            display: block;
+        }
+        
+        .oauth-providers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .oauth-provider {
+            padding: 10px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .oauth-provider:hover {
+            background: #e9ecef;
+        }
+        
+        .oauth-provider.selected {
+            background: #667eea;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .auth-methods {
+                flex-direction: column;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👤 Add User</h1>
+            <p>Add User for {{ app.name }}</p>
+        </div>
+        
+        {% if messages %}
+            <div class="messages">
+                <ul>
+                    {% for message in messages %}
+                        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        
+        <div class="form-container">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="auth-methods">
+                    <div class="auth-method">
+                        <input type="radio" id="manual" name="auth_method" value="manual" checked>
+                        <label for="manual">📝 Manual</label>
+                    </div>
+                    <div class="auth-method">
+                        <input type="radio" id="oauth" name="auth_method" value="oauth">
+                        <label for="oauth">🔗 OAuth</label>
+                    </div>
+                    <div class="auth-method">
+                        <input type="radio" id="credentials" name="auth_method" value="credentials">
+                        <label for="credentials">🔑 Credentials</label>
+                    </div>
+                    <div class="auth-method">
+                        <input type="radio" id="magic_link" name="auth_method" value="magic_link">
+                        <label for="magic_link">✨ Magic Link</label>
+                    </div>
+                </div>
+                
+                <!-- Common fields -->
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                    <div class="help-text">User's email address for authentication</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name">
+                    <div class="help-text">Optional: User's display name</div>
+                </div>
+                
+                <!-- Manual method fields -->
+                <div id="manual_fields" class="dynamic-fields active">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password">
+                        <div class="help-text">Leave blank to auto-generate</div>
+                    </div>
+                </div>
+                
+                <!-- OAuth method fields -->
+                <div id="oauth_fields" class="dynamic-fields">
+                    <div class="form-group">
+                        <label>OAuth Provider</label>
+                        <div class="oauth-providers">
+                            <div class="oauth-provider" data-provider="google">
+                                <div>🔵 Google</div>
+                            </div>
+                            <div class="oauth-provider" data-provider="github">
+                                <div>⚫ GitHub</div>
+                            </div>
+                            <div class="oauth-provider" data-provider="facebook">
+                                <div>🔵 Facebook</div>
+                            </div>
+                            <div class="oauth-provider" data-provider="twitter">
+                                <div>🔵 Twitter</div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="oauth_provider" name="oauth_provider">
+                    </div>
+                </div>
+                
+                <!-- Credentials method fields -->
+                <div id="credentials_fields" class="dynamic-fields">
+                    <div class="form-group">
+                        <label for="cred_password">Password</label>
+                        <input type="password" id="cred_password" name="cred_password">
+                        <div class="help-text">Required for credentials authentication</div>
+                    </div>
+                </div>
+                
+                <!-- Magic Link method fields -->
+                <div id="magic_link_fields" class="dynamic-fields">
+                    <div class="form-group">
+                        <div class="help-text">
+                            <strong>Magic Link:</strong> A login link will be sent to the user's email address.
+                            No password required.
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button type="submit" class="btn btn-primary">➕ Add User</button>
+                    <a href="{% url 'user_list_dashboard' app.app_id %}" class="btn btn-secondary">← Back to Users</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Handle auth method switching
+        document.querySelectorAll('input[name="auth_method"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Hide all dynamic fields
+                document.querySelectorAll('.dynamic-fields').forEach(field => {
+                    field.classList.remove('active');
+                });
+                
+                // Show selected method fields
+                const selectedFields = document.getElementById(this.value + '_fields');
+                if (selectedFields) {
+                    selectedFields.classList.add('active');
+                }
+            });
+        });
+        
+        // Handle OAuth provider selection
+        document.querySelectorAll('.oauth-provider').forEach(provider => {
+            provider.addEventListener('click', function() {
+                // Remove selected class from all providers
+                document.querySelectorAll('.oauth-provider').forEach(p => {
+                    p.classList.remove('selected');
+                });
+                
+                // Add selected class to clicked provider
+                this.classList.add('selected');
+                
+                // Set hidden input value
+                document.getElementById('oauth_provider').value = this.dataset.provider;
+            });
+        });
+    </script>
+</body>
+</html>

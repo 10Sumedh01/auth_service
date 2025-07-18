@@ -1,4 +1,6 @@
-<!DOCTYPE html>
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -43,4 +45,260 @@
         </form>
     </p>
 </body>
+</html> {% endcomment %}
+
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AuthService</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .app-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .app-name {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .app-id {
+            font-family: 'Courier New', monospace;
+            background-color: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        .app-details {
+            margin-bottom: 20px;
+        }
+        
+        .app-details p {
+            margin-bottom: 5px;
+            color: #666;
+        }
+        
+        .app-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-state h3 {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .empty-state p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .create-app-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .btn-lg {
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 50px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .apps-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .app-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .app-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Your Applications</h1>
+            <p>Manage your authentication applications and users</p>
+        </div>
+        
+        {% if apps %}
+            <div class="apps-grid">
+                {% for app in apps %}
+                    <div class="app-card">
+                        <div class="app-header">
+                            <h3 class="app-name">{{ app.name }}</h3>
+                            {% comment %} <span class="app-id">{{ app.app_id }}</span> {% endcomment %}
+                        </div>
+                        <div class="app-details">
+                            <p><strong>Created:</strong> {{ app.created_at|date:"M d, Y" }}</p>
+                            <p><strong>Users:</strong> {{ app.user_count|default:0 }}</p>
+                        </div>
+                        <div class="app-actions">
+                            <a href="{% url 'user_list_dashboard' app.app_id %}" class="btn btn-primary">
+                                👥 Manage Users
+                            </a>
+                            <a href="{% url 'app_details' app.app_id %}" class="btn btn-secondary">
+                                ⚙️ App Details
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📱</div>
+                <h3>No applications found</h3>
+                <p>Create your first application to get started with AuthService!</p>
+            </div>
+        {% endif %}
+        
+        <div class="create-app-section">
+            <a href="{% url 'create_app_dashboard' %}" class="btn btn-success btn-lg">
+                ➕ Create New App
+            </a>
+        </div>
+    </div>
+</body>
 </html>
+{% endblock %}

@@ -1,0 +1,18 @@
+<!-- templates/base.html -->
+ {% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AuthService{% endblock %}</title>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    {% comment %} <!-- Dark Mode Script -->
+    <script src="{% static 'js/dark-mode.js' %}"></script>
+    {% block extra_js %}{% endblock %} {% endcomment %}
+</body>
+</html>

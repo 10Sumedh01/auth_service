@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+{% comment %} <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -80,6 +80,634 @@
                 alert('Copied to clipboard!');
             });
         }
+    </script>
+</body>
+</html> {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Details - {{ app.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .credentials-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .credentials-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .credentials-header h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .credentials-header p {
+            color: #666;
+        }
+        
+        .credential-item {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .credential-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .credential-value {
+            font-family: 'Courier New', monospace;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #666;
+            word-break: break-all;
+            position: relative;
+            border: 1px solid #e9ecef;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .toggle-btn {
+            position: absolute;
+            right: 60px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-btn:hover {
+            background: #5a6268;
+        }
+        
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .warning strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .danger-zone {
+            background: white;
+            border: 2px solid #dc3545;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+        
+        .danger-zone h2 {
+            color: #dc3545;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .danger-zone p {
+            color: #666;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .danger-zone .warning {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        
+        .hidden {
+            filter: blur(5px);
+            user-select: none;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-in-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+        }
+        
+        .modal-header h2 {
+            margin-bottom: 5px;
+        }
+        
+        .modal-body {
+            padding: 30px;
+        }
+        
+        .modal-body p {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .confirmation-input {
+            margin-bottom: 20px;
+        }
+        
+        .confirmation-input label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .confirmation-input input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .confirmation-input input:focus {
+            outline: none;
+            border-color: #dc3545;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        .confirmation-message {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .confirmation-message strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+        }
+        
+        .stat-number {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .credentials-section {
+                padding: 20px;
+            }
+            
+            .actions {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .copy-btn, .toggle-btn {
+                position: static;
+                transform: none;
+                margin-top: 10px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ App Details</h1>
+            <p>{{ app.name }}</p>
+        </div>
+        
+        <div class="credentials-section">
+            <div class="credentials-header">
+                <h2>🔑 Your API Key and App ID</h2>
+                <p>Use these credentials to authenticate your application</p>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Keep these credentials secure:</strong>
+                Never expose your API key in client-side code or public repositories.
+            </div>
+            
+            <div class="credential-item">
+                <div class="credential-label">App ID:</div>
+                <div class="credential-value">
+                    {{ app.app_id }}
+                    <button class="copy-btn" onclick="copyToClipboard('{{ app.app_id }}')">📋 Copy</button>
+                </div>
+            </div>
+            
+            <div class="credential-item">
+                <div class="credential-label">API Key:</div>
+                <div class="credential-value">
+                    <span id="apiKey" class="hidden">{{ api_key.key }}</span>
+                    <button class="toggle-btn" onclick="toggleVisibility()">👁️ Show</button>
+                    <button class="copy-btn" onclick="copyToClipboard('{{ api_key.key }}')">📋 Copy</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Danger Zone -->
+        <div class="danger-zone">
+            <h2>🚨 Danger Zone</h2>
+            <p>Once you delete an app, there is no going back. Please be certain.</p>
+            
+            <div class="warning">
+                <strong>⚠️ This action cannot be undone!</strong>
+                This will permanently delete the app, all associated users, API keys, and configuration data.
+            </div>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number">{{ user_count }}</div>
+                    <div class="stat-label">Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ api_key_count }}</div>
+                    <div class="stat-label">API Keys</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ days_since_created }}</div>
+                    <div class="stat-label">Days Old</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button class="btn btn-danger" onclick="openDeleteModal()">
+                    🗑️ Delete App
+                </button>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="{% url 'user_list_dashboard' app.app_id %}" class="btn btn-primary">
+                👥 Manage Users
+            </a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🚨 Delete Application</h2>
+                <p>This action cannot be undone!</p>
+            </div>
+            <div class="modal-body">
+                <div class="confirmation-message">
+                    <strong>You are about to delete:</strong>
+                    <ul style="margin-top: 10px; padding-left: 20px;">
+                        <li>App: <strong>{{ app.name }}</strong></li>
+                        <li>{{ user_count }} user(s)</li>
+                        <li>All API keys and configurations</li>
+                        <li>All authentication data</li>
+                    </ul>
+                </div>
+                
+                <p><strong>To confirm deletion, please type the app name exactly as shown:</strong></p>
+                <p style="font-family: monospace; background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0;">{{ app.name }}</p>
+                
+                <div class="confirmation-input">
+                    <label for="confirmAppName">App Name:</label>
+                    <input type="text" id="confirmAppName" placeholder="Type app name here..." autocomplete="off">
+                </div>
+                
+                <div class="confirmation-input">
+                    <label for="confirmPassword">Your Password (for security):</label>
+                    <input type="password" id="confirmPassword" placeholder="Enter your password..." autocomplete="current-password">
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+                    <button class="btn btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()" disabled>
+                        🗑️ Delete Forever
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard!');
+            }, function(err) {
+                console.error('Could not copy text: ', err);
+            });
+        }
+        
+        function toggleVisibility() {
+            const apiKey = document.getElementById('apiKey');
+            const toggleBtn = document.querySelector('.toggle-btn');
+            
+            if (apiKey.classList.contains('hidden')) {
+                apiKey.classList.remove('hidden');
+                toggleBtn.textContent = '🙈 Hide';
+            } else {
+                apiKey.classList.add('hidden');
+                toggleBtn.textContent = '👁️ Show';
+            }
+        }
+        
+        function openDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Reset form
+            document.getElementById('confirmAppName').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('confirmDeleteBtn').disabled = true;
+        }
+        
+        // Enable delete button only when app name matches
+        document.getElementById('confirmAppName').addEventListener('input', function() {
+            const appName = '{{ app.name }}';
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const passwordField = document.getElementById('confirmPassword');
+            
+            if (this.value === appName && passwordField.value.length > 0) {
+                confirmBtn.disabled = false;
+            } else {
+                confirmBtn.disabled = true;
+            }
+        });
+        
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const appName = '{{ app.name }}';
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const appNameField = document.getElementById('confirmAppName');
+            
+            if (appNameField.value === appName && this.value.length > 0) {
+                confirmBtn.disabled = false;
+            } else {
+                confirmBtn.disabled = true;
+            }
+        });
+        
+        function confirmDelete() {
+            const appName = document.getElementById('confirmAppName').value;
+            const password = document.getElementById('confirmPassword').value;
+            
+            if (appName !== '{{ app.name }}') {
+                alert('App name does not match. Please try again.');
+                return;
+            }
+            
+            if (!password) {
+                alert('Please enter your password for security verification.');
+                return;
+            }
+            
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "delete_app" app.app_id %}';
+            
+            // Add CSRF token
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = 'csrfmiddlewaretoken';
+            csrfToken.value = '{{ csrf_token }}';
+            form.appendChild(csrfToken);
+            
+            // Add app name confirmation
+            const appNameInput = document.createElement('input');
+            appNameInput.type = 'hidden';
+            appNameInput.name = 'confirm_app_name';
+            appNameInput.value = appName;
+            form.appendChild(appNameInput);
+            
+            // Add password
+            const passwordInput = document.createElement('input');
+            passwordInput.type = 'hidden';
+            passwordInput.name = 'password';
+            passwordInput.value = password;
+            form.appendChild(passwordInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target == modal) {
+                closeDeleteModal();
+            }
+        }
+        
+        // Handle escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeDeleteModal();
+            }
+        });
     </script>
 </body>
 </html>
