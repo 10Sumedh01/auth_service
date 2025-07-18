@@ -2,7 +2,7 @@ import json
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework_simplejwt.tokens import RefreshToken
 from allauth.socialaccount.models import SocialToken
-from .models import App, User, ApiKey, OAuthConfig
+from .models import App, User, ApiKey, OAuthConfig, DjangoUser
 import uuid
 import requests
 from django.utils import timezone
@@ -20,6 +20,8 @@ from rest_framework.permissions import IsAuthenticated
 from urllib.parse import urlencode
 from django.core.paginator import Paginator
 from rest_framework.pagination import PageNumberPagination
+from oauth2_provider.views.generic import ProtectedResourceView
+from django.http import JsonResponse
 
 def generate_jwt_token(user, app):
     """Generate JWT token for user with app context"""
@@ -182,34 +184,35 @@ class CredentialsSignUpView(APIView):
                 user.save(update_fields=['last_login'])
                 
                 # Issue JWT
-                # refresh = RefreshToken()
-                # refresh['app_id'] = request.app.app_id
-                # refresh['user_id'] = user.user_id
-                # refresh['email'] = user.email
-                token = generate_jwt_token(user, request.app)
+                token = generate_jwt_token(user.proxy_user, request.app)
                 return Response({'token': token})
             else:
                 return Response({'error': 'Invalid credentials'}, status=401)
 
         except User.DoesNotExist:
             # User does not exist, create a new one
+            
+            # Create a proxy Django user for OAuth2 compatibility
+            proxy_user = DjangoUser.objects.create_user(
+                username=f"{request.app.app_id}_{email}",
+                email=email,
+                password=password 
+            )
+
             user = User.objects.create(
                 app=request.app,
+                proxy_user=proxy_user,
                 email=email,
                 name=name,
-                password=make_password(password),
+                password=make_password(password), # Hash the password
                 auth_method='credentials',
-                user_id=str(uuid.uuid4()),
-                last_login=timezone.now()
+                user_id=str(uuid.uuid4())
             )
+            user.last_login = timezone.now()
             user.save()
 
-            # Issue JWT
-            # refresh = RefreshToken()
-            # refresh['app_id'] = request.app.app_id
-            # refresh['user_id'] = user.user_id
-            # refresh['email'] = user.email
-            token = generate_jwt_token(user, request.app)
+            # Issue JWT for your own system's use
+            token = generate_jwt_token(user.proxy_user, request.app)
             return Response({'token': token}, status=201)
 
 # Credentials Sign-In: Handles email/password login
@@ -232,7 +235,7 @@ class CredentialsSignInView(APIView):
                 user.save()
                 
                 # Issue JWT
-                token = generate_jwt_token(user, request.app)
+                token = generate_jwt_token(user.proxy_user, request.app)
                 return Response({'token': token})
             else:
                 return Response({'error': 'Invalid credentials'}, status=401)
@@ -303,6 +306,27 @@ class MagicLinkVerifyView(APIView):
             return Response({'token': str(token)})
         except (App.DoesNotExist, User.DoesNotExist):
             return Response({'error': 'Invalid app or user'}, status=404)
+
+
+class UserProfileView(ProtectedResourceView):
+    def get(self, request, *args, **kwargs):
+        # The user object is automatically available on the request
+        # thanks to the oauth2_provider middleware.
+        user = request.resource_owner
+        
+        # Find the associated AppUser to get more details
+        try:
+            app_user = User.objects.get(proxy_user=user)
+            return JsonResponse({
+                'app_id': app_user.app.app_id,
+                'user_id': app_user.user_id,
+                'email': app_user.email,
+                'name': app_user.name,
+                'auth_method': app_user.auth_method,
+                'last_login': app_user.last_login
+            })
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'Associated app user not found'}, status=404)
         except Exception:
             return Response({'error': 'Invalid token'}, status=401)
 

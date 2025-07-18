@@ -27,6 +27,7 @@ urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
     path('signup/', CustomSignupView.as_view(), name='signup'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
+    path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('dashboard/', dashboard, name='dashboard'), # Root dashboard
     path('dashboard/app/<str:app_id>/', app_details, name='app_details'),
     path('dashboard/<str:app_id>/users', user_list_dashboard, name='user_list_dashboard'),

@@ -1,12 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User as DjangoUser
 import uuid
+from oauth2_provider.models import AbstractApplication
 
 # App that developers can create to manage their users and API keys, each app has a unique ID
 class App(models.Model):
     app_id = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
     name = models.CharField(max_length=200)
-    developer = models.ForeignKey(User, on_delete=models.CASCADE)
+    developer = models.ForeignKey(DjangoUser, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -17,6 +18,9 @@ class App(models.Model):
 
 # User model representing users of the app, 
 class User(models.Model):
+    # Link to the built-in Django user model for OAuth2 compatibility
+    proxy_user = models.OneToOneField(DjangoUser, on_delete=models.CASCADE, related_name='app_user', null=True)
+    
     app = models.ForeignKey(App, on_delete=models.CASCADE, related_name='users')
     user_id = models.CharField(max_length=100)
     email = models.EmailField()

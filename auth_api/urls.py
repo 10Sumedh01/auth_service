@@ -1,10 +1,13 @@
 from django.urls import path
 from .views import (
     OAuthRedirectView, OAuthCallbackView, CredentialsSignInView, CredentialsSignUpView,
-    MagicLinkView, MagicLinkVerifyView
+    MagicLinkView, MagicLinkVerifyView, UserProfileView
 )
 
 urlpatterns = [
+    # OAuth2 protected resource endpoint
+    path('me/', UserProfileView.as_view(), name='user_profile'),
+
     # Authentication APIs
     path('auth/credentials/signup/<str:app_id>', CredentialsSignUpView.as_view(), name='credentials_signup'),
     path('auth/credentials/signin/<str:app_id>', CredentialsSignInView.as_view(), name='credentials_signin'),
