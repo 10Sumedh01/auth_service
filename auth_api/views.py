@@ -21,11 +21,14 @@ from urllib.parse import urlencode
 from django.core.paginator import Paginator
 from rest_framework.pagination import PageNumberPagination
 
-# Custom pagination class
-class CustomPagination(PageNumberPagination):
-    page_size = 20
-    page_size_query_param = 'page_size'
-    max_page_size = 100
+def generate_jwt_token(user, app):
+    """Generate JWT token for user with app context"""
+    refresh = RefreshToken.for_user(user)
+    refresh['app_id'] = app.app_id
+    refresh['user_id'] = user.user_id
+    refresh['email'] = user.email
+    return str(refresh.access_token)
+
 
 # Custom authentication for API keys
 class ApiKeyAuthentication(BaseAuthentication):
@@ -176,14 +179,15 @@ class CredentialsSignUpView(APIView):
             # User exists, check password to log them in
             if check_password(password, user.password):
                 user.last_login = timezone.now()
-                user.save()
+                user.save(update_fields=['last_login'])
                 
                 # Issue JWT
-                refresh = RefreshToken()
-                refresh['app_id'] = request.app.app_id
-                refresh['user_id'] = user.user_id
-                refresh['email'] = user.email
-                return Response({'token': str(refresh.access_token)})
+                # refresh = RefreshToken()
+                # refresh['app_id'] = request.app.app_id
+                # refresh['user_id'] = user.user_id
+                # refresh['email'] = user.email
+                token = generate_jwt_token(user, request.app)
+                return Response({'token': token})
             else:
                 return Response({'error': 'Invalid credentials'}, status=401)
 
@@ -193,19 +197,20 @@ class CredentialsSignUpView(APIView):
                 app=request.app,
                 email=email,
                 name=name,
-                password=make_password(password), # Hash the password
+                password=make_password(password),
                 auth_method='credentials',
-                user_id=str(uuid.uuid4())
+                user_id=str(uuid.uuid4()),
+                last_login=timezone.now()
             )
-            user.last_login = timezone.now()
             user.save()
 
             # Issue JWT
-            refresh = RefreshToken()
-            refresh['app_id'] = request.app.app_id
-            refresh['user_id'] = user.user_id
-            refresh['email'] = user.email
-            return Response({'token': str(refresh.access_token)}, status=201)
+            # refresh = RefreshToken()
+            # refresh['app_id'] = request.app.app_id
+            # refresh['user_id'] = user.user_id
+            # refresh['email'] = user.email
+            token = generate_jwt_token(user, request.app)
+            return Response({'token': token}, status=201)
 
 # Credentials Sign-In: Handles email/password login
 class CredentialsSignInView(APIView):
@@ -227,11 +232,8 @@ class CredentialsSignInView(APIView):
                 user.save()
                 
                 # Issue JWT
-                refresh = RefreshToken()
-                refresh['app_id'] = request.app.app_id
-                refresh['user_id'] = user.user_id
-                refresh['email'] = user.email
-                return Response({'token': str(refresh.access_token)})
+                token = generate_jwt_token(user, request.app)
+                return Response({'token': token})
             else:
                 return Response({'error': 'Invalid credentials'}, status=401)
         except User.DoesNotExist:
