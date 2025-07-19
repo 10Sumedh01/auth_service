@@ -20,14 +20,22 @@ from rest_framework.permissions import IsAuthenticated
 from urllib.parse import urlencode
 from django.core.paginator import Paginator
 from rest_framework.pagination import PageNumberPagination
+from django.core.cache import cache
+import argon2
+import os
 
 def generate_jwt_token(user, app):
     """Generate JWT token for user with app context"""
-    refresh = RefreshToken.for_user(user)
-    refresh['app_id'] = app.app_id
-    refresh['user_id'] = user.user_id
-    refresh['email'] = user.email
-    return str(refresh.access_token)
+    cache_key = f"jwt_token:{user.user_id}:{app.app_id}"
+    token = cache.get(cache_key)
+    if not token:
+        refresh = RefreshToken.for_user(user)
+        refresh['app_id'] = app.app_id
+        refresh['user_id'] = user.user_id
+        refresh['email'] = user.email
+        token = str(refresh.access_token)
+        cache.set(cache_key, token, timeout=3600)  # Cache for 1 hour
+    return token
 
 
 # Custom authentication for API keys
@@ -59,12 +67,14 @@ class ApiKeyAuthentication(BaseAuthentication):
 class OAuthRedirectView(APIView):
     def get(self, request, provider, app_id):
         try:
-            # app = App.objects.get(app_id=app_id)
-            # oauth_config = OAuthConfig.objects.get(app=app, provider=provider)
-            oauth_config = OAuthConfig.objects.select_related('app').get(
-                app__app_id=app_id, 
-                provider=provider
-            )
+            cache_key = f"oauth_config:{app_id}:{provider}"
+            oauth_config = cache.get(cache_key)
+            if not oauth_config:
+                oauth_config = OAuthConfig.objects.select_related('app').get(
+                    app__app_id=app_id, 
+                    provider=provider
+                )
+                cache.set(cache_key, oauth_config, timeout=300)  # Cache for 5 minutes
             app = oauth_config.app
 
             # Build redirect URI with app_id included
@@ -85,13 +95,19 @@ class OAuthRedirectView(APIView):
 class OAuthCallbackView(APIView):
     def get(self, request, provider, app_id):
         try:
-            # app = App.objects.get(app_id=app_id)
-            # oauth_config = OAuthConfig.objects.get(app=app, provider=provider)
-            oauth_config = OAuthConfig.objects.select_related('app').get(
-                app__app_id=app_id, 
-                provider=provider
-            )
+            cache_key = f"oauth_config:{app_id}:{provider}"
+            oauth_config = cache.get(cache_key)
+            if not oauth_config:
+                oauth_config = OAuthConfig.objects.select_related('app').get(
+                    app__app_id=app_id, 
+                    provider=provider
+                )
+                cache.set(cache_key, oauth_config, timeout=300)  # Cache for 5 minutes
             app = oauth_config.app
+            app = cache.get(f"app:{app_id}")
+            if not app:
+                app = App.objects.get(app_id=app_id)
+                cache.set(f"app:{app_id}", app, timeout=300)
             code = request.query_params.get('code')
             if not code:
                 return Response({'error': 'Authorization code not provided'}, status=400)
@@ -135,11 +151,12 @@ class OAuthCallbackView(APIView):
                     'user_id': user_id,
                     'name': name,
                     'auth_method': 'oauth',
-                    'password': make_password(None)  # unusable password
+                    'password': argon2.hash_password_raw(password=b"unusable password", salt=os.urandom(16), time_cost=8, memory_cost=102400, parallelism=8, hash_len=32, type=argon2.low_level.Type.ID),  # unusable password
+                    'last_login': timezone.now()
                 }
             )
-            user.last_login = timezone.now()
-            user.save()
+            #user.last_login = timezone.now()
+            #user.save()
 
             # Issue JWT
             refresh = RefreshToken.for_user(user)
@@ -162,8 +179,15 @@ class CredentialsSignUpView(APIView):
     authentication_classes = [ApiKeyAuthentication]
 
     def post(self, request, app_id):
-        if not hasattr(request, 'app') or request.app.app_id != app_id:
-            raise AuthenticationFailed('Invalid or inactive API key for this app')
+        cache_key = f"app:{app_id}"
+        app = cache.get(cache_key)
+        if not app:
+            try:
+                app = App.objects.get(app_id=app_id)
+                cache.set(cache_key, app, timeout=300)  # Cache for 5 minutes
+            except App.DoesNotExist:
+                raise AuthenticationFailed('Invalid app')
+        request.app = app
 
         email = request.data.get('email')
         password = request.data.get('password')
@@ -197,7 +221,7 @@ class CredentialsSignUpView(APIView):
                 app=request.app,
                 email=email,
                 name=name,
-                password=make_password(password),
+                password=argon2.hash_password_raw(password=password.encode('utf-8'), salt=os.urandom(16), time_cost=8, memory_cost=102400, parallelism=8, hash_len=32, type=argon2.low_level.Type.ID),
                 auth_method='credentials',
                 user_id=str(uuid.uuid4()),
                 last_login=timezone.now()
@@ -215,9 +239,17 @@ class CredentialsSignUpView(APIView):
 # Credentials Sign-In: Handles email/password login
 class CredentialsSignInView(APIView):
     authentication_classes = [ApiKeyAuthentication]
+
     def post(self, request, app_id):
-        if not hasattr(request, 'app') or request.app.app_id != app_id:
-            raise AuthenticationFailed('Invalid or inactive API key for this app')
+        cache_key = f"app:{app_id}"
+        app = cache.get(cache_key)
+        if not app:
+            try:
+                app = App.objects.get(app_id=app_id)
+                cache.set(cache_key, app, timeout=300)  # Cache for 5 minutes
+            except App.DoesNotExist:
+                raise AuthenticationFailed('Invalid app')
+        request.app = app
 
         email = request.data.get('email')
         password = request.data.get('password')
@@ -242,54 +274,61 @@ class CredentialsSignInView(APIView):
 # Magic Link: Sends email link, verifies, issues JWT
 class MagicLinkView(APIView):
     authentication_classes = [ApiKeyAuthentication]
-    def post(self, request, app_id):
-        if not hasattr(request, 'app') or request.app.app_id != app_id:
-            raise AuthenticationFailed('Invalid or inactive API key for this app')
-            
-        try:
-            # app = App.objects.get(app_id=app_id)
-            app = request.app
-            email = request.data.get('email')
-            if not email or '@' not in email:
-                return Response({'error': 'A valid email is required'}, status=400)
 
-            user, _ = User.objects.get_or_create(
-                app=app,
-                email=email,
-                defaults={
-                    'user_id': str(uuid.uuid4()),
-                    'name': '',
-                    'auth_method': 'magic_link',
-                    'password': make_password(None) # Set a non-usable password
-                }
-            )
-            
-            refresh = RefreshToken()
-            
-            refresh = RefreshToken()
-            refresh['app_id'] = app.app_id
-            refresh['user_id'] = user.user_id
-            refresh['email'] = user.email
-            
-            link = f"{request.scheme}://{request.get_host()}/api/auth/verify/{app_id}?token={str(refresh.access_token)}"
-            send_mail(
-                'Sign In to Your App',
-                f'Click to sign in: {link}',
-                'from@your-auth-service.com',
-                [email],
-                fail_silently=False,
-            )
-            return Response({'success': True})
-        except App.DoesNotExist:
-            return Response({'error': 'Invalid app'}, status=404)
+    def post(self, request, app_id):
+        cache_key = f"app:{app_id}"
+        app = cache.get(cache_key)
+        if not app:
+            try:
+                app = App.objects.get(app_id=app_id)
+                cache.set(cache_key, app, timeout=300)  # Cache for 5 minutes
+            except App.DoesNotExist:
+                return Response({'error': 'Invalid app'}, status=404)
+        request.app = app
+
+        email = request.data.get('email')
+        if not email or '@' not in email:
+            return Response({'error': 'A valid email is required'}, status=400)
+
+        user, _ = User.objects.get_or_create(
+            app=request.app,
+            email=email,
+            defaults={
+                'user_id': str(uuid.uuid4()),
+                'name': '',
+                'auth_method': 'magic_link',
+                'password': argon2.hash_password_raw(password=b"unusable password", salt=os.urandom(16), time_cost=8, memory_cost=102400, parallelism=8, hash_len=32, type=argon2.low_level.Type.ID), # Set a non-usable password
+            }
+        )
+        
+        refresh = RefreshToken()
+        
+        refresh = RefreshToken()
+        refresh['app_id'] = app.app_id
+        refresh['user_id'] = user.user_id
+        refresh['email'] = user.email
+        
+        link = f"{request.scheme}://{request.get_host()}/api/auth/verify/{app_id}?token={str(refresh.access_token)}"
+        send_mail(
+            'Sign In to Your App',
+            f'Click to sign in: {link}',
+            'from@your-auth-service.com',
+            [email],
+            fail_silently=False,
+        )
+        return Response({'success': True})
 
 # Magic Link Verification: Verifies token, updates last_login, returns JWT
 class MagicLinkVerifyView(APIView):
     def get(self, request, app_id):
         try:
             token = request.query_params.get('token')
-            app = App.objects.get(app_id=app_id)
             
+            app = cache.get(f"app:{app_id}")
+            if not app:
+                app = App.objects.get(app_id=app_id)
+                cache.set(f"app:{app_id}", app, timeout=300)
+
             # Verify JWT
             from rest_framework_simplejwt.tokens import AccessToken
             token_obj = AccessToken(token)
@@ -312,7 +351,11 @@ class CheckUserLoginView(APIView):
     authentication_classes = [ApiKeyAuthentication]
     def get(self, request, app_id, user_id):
         try:
-            app = App.objects.get(app_id=app_id)
+            app = cache.get(f"app:{app_id}")
+            if not app:
+                app = App.objects.get(app_id=app_id)
+                cache.set(f"app:{app_id}", app, timeout=300)
+
             user = User.objects.get(app=app, user_id=user_id)
             
             # This is a simplified check. A real implementation would

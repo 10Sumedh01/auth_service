@@ -101,6 +101,9 @@ DATABASES = {
     }
 }
 
+# Use persistent connections
+CONN_MAX_AGE = 60  # Keep connections alive for 60 seconds
+
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -154,5 +157,12 @@ DEFAULT_FROM_EMAIL = 'mailtrap@demomailtrap.com'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379',
+    }
+}
 
 ACCOUNT_LOGOUT_REDIRECT_URL = '/login/'
