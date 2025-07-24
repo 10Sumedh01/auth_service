@@ -10,6 +10,7 @@ from django.views.generic.edit import CreateView
 from django.views.decorators.http import require_http_methods
 from auth_api.models import App, User, ApiKey, OAuthConfig
 import uuid
+import requests
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate
 from django.contrib import messages
@@ -135,6 +136,7 @@ def app_details(request, app_id):
     try:
         app = get_object_or_404(App, app_id=app_id, developer=request.user)
         api_key = ApiKey.objects.filter(app=app, is_active=True).first()
+        oauth_configs = OAuthConfig.objects.filter(app=app)
         
         # Get statistics
         user_count = User.objects.filter(app=app).count()
@@ -144,6 +146,7 @@ def app_details(request, app_id):
         context = {
             'app': app,
             'api_key': api_key,
+            'oauth_configs': oauth_configs,
             'user_count': user_count,
             'api_key_count': api_key_count,
             'days_since_created': days_since_created,
@@ -217,3 +220,117 @@ def add_user_dashboard(request, app_id):
     except App.DoesNotExist:
         messages.error(request, 'Invalid app')
         return redirect('login')
+
+@login_required
+def add_auth_config(request, app_id):
+    app = get_object_or_404(App, app_id=app_id, developer=request.user)
+    if request.method == 'POST':
+        provider = request.POST.get('provider')
+        client_id = request.POST.get('client_id')
+        client_secret = request.POST.get('client_secret')
+        redirect_uri = request.POST.get('redirect_uri')
+
+        if not all([provider, client_id, client_secret, redirect_uri]):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'auth_service/add_auth_config.html', {'app': app})
+
+        config, created = OAuthConfig.objects.get_or_create(
+            app=app,
+            provider=provider,
+            defaults={
+                'client_id': client_id,
+                'client_secret': client_secret,
+                'redirect_uri': redirect_uri
+            }
+        )
+
+        if created:
+            messages.success(request, f'{provider.capitalize()} OAuth configuration saved.')
+        else:
+            config.client_id = client_id
+            config.client_secret = client_secret
+            config.redirect_uri = redirect_uri
+            config.save()
+            messages.success(request, f'{provider.capitalize()} OAuth configuration updated.')
+            
+        return redirect('app_details', app_id=app_id)
+
+    return render(request, 'auth_service/add_auth_config.html', {'app': app})
+
+@login_required
+def test_oauth_config(request, app_id, config_id):
+    config = get_object_or_404(OAuthConfig, id=config_id, app__app_id=app_id, app__developer=request.user)
+    request.session['oauth_test_config_id'] = config.id
+
+    if config.provider == 'google':
+        auth_url = (
+            f"https://accounts.google.com/o/oauth2/v2/auth?"
+            f"client_id={config.client_id}&"
+            f"redirect_uri={config.redirect_uri}&"
+            f"response_type=code&"
+            f"scope=email%20profile&"
+            f"access_type=offline"
+        )
+    elif config.provider == 'github':
+        auth_url = (
+            f"https://github.com/login/oauth/authorize?"
+            f"client_id={config.client_id}&"
+            f"redirect_uri={config.redirect_uri}&"
+            f"scope=user:email"
+        )
+    else:
+        messages.error(request, "Unsupported provider.")
+        return redirect('app_details', app_id=app_id)
+
+    return redirect(auth_url)
+
+
+@login_required
+def oauth_callback(request):
+    config_id = request.session.get('oauth_test_config_id')
+    if not config_id:
+        messages.error(request, "OAuth test session expired or invalid.")
+        return redirect('dashboard')
+
+    config = get_object_or_404(OAuthConfig, id=config_id)
+    app_id = config.app.app_id
+    code = request.GET.get('code')
+
+    if not code:
+        messages.error(request, "Authorization code not found in callback.")
+        return redirect('app_details', app_id=app_id)
+
+    try:
+        if config.provider == 'google':
+            token_url = "https://oauth2.googleapis.com/token"
+            data = {
+                'client_id': config.client_id,
+                'client_secret': config.client_secret,
+                'code': code,
+                'redirect_uri': config.redirect_uri,
+                'grant_type': 'authorization_code'
+            }
+            response = requests.post(token_url, data=data)
+            response.raise_for_status()
+            messages.success(request, "Google OAuth configuration test successful!")
+
+        elif config.provider == 'github':
+            token_url = "https://github.com/login/oauth/access_token"
+            headers = {'Accept': 'application/json'}
+            data = {
+                'client_id': config.client_id,
+                'client_secret': config.client_secret,
+                'code': code,
+                'redirect_uri': config.redirect_uri
+            }
+            response = requests.post(token_url, headers=headers, data=data)
+            response.raise_for_status()
+            if 'access_token' in response.json():
+                messages.success(request, "GitHub OAuth configuration test successful!")
+            else:
+                messages.error(request, f"GitHub OAuth test failed: {response.json().get('error_description')}")
+
+    except requests.exceptions.RequestException as e:
+        messages.error(request, f"OAuth test failed: {e}")
+
+    return redirect('app_details', app_id=app_id)

@@ -505,6 +505,30 @@
                 </div>
             </div>
         </div>
+
+        <div class="credentials-section">
+            <div class="credentials-header">
+                <h2>🔒 OAuth Configurations</h2>
+                <p>Manage your OAuth provider settings</p>
+            </div>
+            {% if oauth_configs %}
+                {% for config in oauth_configs %}
+                <div class="credential-item">
+                    <div class="credential-label">{{ config.provider.capitalize }}</div>
+                    <div class="credential-value">
+                        Client ID: {{ config.client_id }}
+                    </div>
+                    <div class="actions" style="margin-top: 15px;">
+                        <a href="{% url 'test_oauth_config' app.app_id config.id %}" class="btn btn-secondary">
+                            🧪 Test
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center;">No OAuth configurations found.</p>
+            {% endif %}
+        </div>
         
         <!-- Danger Zone -->
         <div class="danger-zone">
@@ -539,6 +563,9 @@
         </div>
         
         <div class="actions">
+            <a href="{% url 'add_auth_config' app.app_id %}" class="btn btn-primary">
+                ➕ Add OAuth Config
+            </a>
             <a href="{% url 'user_list_dashboard' app.app_id %}" class="btn btn-primary">
                 👥 Manage Users
             </a>
