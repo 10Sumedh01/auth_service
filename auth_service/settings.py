@@ -163,10 +163,24 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# Caching Configuration for Production
+# Uncomment and configure the following lines for production caching with Redis
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': f"redis://sumedh:Sumedh@21@redis-13811.c99.us-east-1-4.ec2.redns.redis-cloud.com:13811/0",
+#     }
+# }
+
+
+# Development Caching Configuration
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': f"redis://sumedh:Sumedh@21@redis-13811.c99.us-east-1-4.ec2.redns.redis-cloud.com:13811/0",
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 
