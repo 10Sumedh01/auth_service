@@ -294,7 +294,7 @@ def test_oauth_config(request, app_id, config_id):
     return redirect(auth_url)
 
 
-@login_.required
+@login_required
 def oauth_callback(request):
     config_id = request.session.get('oauth_test_config_id')
     if not config_id:
