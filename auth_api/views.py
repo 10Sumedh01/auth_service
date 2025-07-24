@@ -1,25 +1,25 @@
 import json
 from django.contrib.auth.hashers import make_password, check_password
 from rest_framework_simplejwt.tokens import RefreshToken
-from allauth.socialaccount.models import SocialToken
+# from allauth.socialaccount.models import SocialToken #checkout allauth docs for future reference
 from .models import App, User, ApiKey, OAuthConfig
 import uuid
 import requests
 from django.utils import timezone
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.core.paginator import Paginator
+from django.shortcuts import redirect
+# from django.contrib.auth.decorators import login_required
+# from django.contrib import messages
+# from django.core.paginator import Paginator
 from django.db.models import Q
 from django.core.mail import send_mail
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.permissions import IsAuthenticated
+# from rest_framework.permissions import IsAuthenticated
 from urllib.parse import urlencode
-from django.core.paginator import Paginator
-from rest_framework.pagination import PageNumberPagination
+# from django.core.paginator import Paginator
+# from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
 import argon2
 import os
@@ -151,7 +151,7 @@ class OAuthCallbackView(APIView):
                     'user_id': user_id,
                     'name': name,
                     'auth_method': 'oauth',
-                    'password': argon2.hash_password_raw(password=b"unusable password", salt=os.urandom(16), time_cost=8, memory_cost=102400, parallelism=8, hash_len=32, type=argon2.low_level.Type.ID),  # unusable password
+                    'password': make_password(None),  # unusable password
                     'last_login': timezone.now()
                 }
             )
@@ -221,7 +221,7 @@ class CredentialsSignUpView(APIView):
                 app=request.app,
                 email=email,
                 name=name,
-                password=argon2.hash_password_raw(password=password.encode('utf-8'), salt=os.urandom(16), time_cost=8, memory_cost=102400, parallelism=8, hash_len=32, type=argon2.low_level.Type.ID),
+                password=make_password(password),
                 auth_method='credentials',
                 user_id=str(uuid.uuid4()),
                 last_login=timezone.now()
@@ -297,7 +297,7 @@ class MagicLinkView(APIView):
                 'user_id': str(uuid.uuid4()),
                 'name': '',
                 'auth_method': 'magic_link',
-                'password': argon2.hash_password_raw(password=b"unusable password", salt=os.urandom(16), time_cost=8, memory_cost=102400, parallelism=8, hash_len=32, type=argon2.low_level.Type.ID), # Set a non-usable password
+                'password': make_password(None), # Set a non-usable password
             }
         )
         

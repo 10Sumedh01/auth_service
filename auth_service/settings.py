@@ -50,6 +50,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -57,6 +58,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+
 
 ROOT_URLCONF = 'auth_service.urls'
 
@@ -161,9 +166,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379',
-        # 'LOCATION': 'redis://sumedh:Sumedh@21@redis.example.com:6379/0', #for remote redis server
+        'LOCATION': f"redis://sumedh:Sumedh@21@redis-13811.c99.us-east-1-4.ec2.redns.redis-cloud.com:13811/0",
     }
 }
 
+LOGIN_URL = 'login'
 ACCOUNT_LOGOUT_REDIRECT_URL = '/login/'
