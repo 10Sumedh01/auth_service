@@ -47,6 +47,7 @@ class ApiKey(models.Model):
     def __str__(self):
         return f"API Key for {self.app.name}"
 
+# Authentication configuration for OAuth providers like GitHub or Google
 class OAuthConfig(models.Model):
     app = models.ForeignKey(App, on_delete=models.CASCADE, related_name='oauth_configs')
     provider = models.CharField(max_length=50, choices=[
