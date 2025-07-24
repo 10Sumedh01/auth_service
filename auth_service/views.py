@@ -11,6 +11,8 @@ from django.views.decorators.http import require_http_methods
 from auth_api.models import App, User, ApiKey, OAuthConfig
 import uuid
 import requests
+import logging
+from django.core.cache import cache
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import authenticate
 from django.contrib import messages
@@ -18,6 +20,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_http_methods
 from django.utils import timezone
 from django.db import transaction
+
+logger = logging.getLogger(__name__)
+
 def home(request):
     return render(request, 'auth_service/home.html')
 
@@ -101,7 +106,8 @@ def delete_app(request, app_id):
         return redirect('dashboard')
         
     except Exception as e:
-        messages.error(request, f'An error occurred while deleting the app: {str(e)}')
+        logger.error(f"Error deleting app {app_id}: {e}")
+        messages.error(request, f'An error occurred while deleting the app.')
         return redirect('app_details', app_id=app_id)
 
 
@@ -125,14 +131,12 @@ def create_app_dashboard(request):
                 'api_key': api_key.key
             })
         except Exception as e:
-            messages.error(request, f'Error creating app: {e}')
+            logger.error(f"Error creating app: {e}")
+            messages.error(request, f'Error creating app.')
     return render(request, 'auth_service/create_app.html')
 
 @login_required
 def app_details(request, app_id):
-    # app = get_object_or_404(App, app_id=app_id, developer=request.user)
-    # api_key = ApiKey.objects.filter(app=app).first()
-    # return render(request, 'auth_service/app_details.html', {'app': app, 'api_key': api_key})
     try:
         app = get_object_or_404(App, app_id=app_id, developer=request.user)
         api_key = ApiKey.objects.filter(app=app, is_active=True).first()
@@ -161,15 +165,10 @@ def app_details(request, app_id):
 @login_required
 def user_list_dashboard(request, app_id):
     try:
-        # app = App.objects.get(app_id=app_id, developer=request.user)
         app = App.objects.select_related('developer').get(app_id=app_id, developer=request.user)
-        # users = User.objects.filter(app=app).values(
-        #     'user_id', 'email', 'name', 'auth_method', 'last_login', 'created_at'
-        # )
         users = User.objects.filter(app=app).values(
             'user_id', 'email', 'name', 'auth_method', 'last_login', 'created_at'
-        ).order_by('-created_at')  # Add ordering
-        # Implementing search functionality
+        ).order_by('-created_at')
         search_query = request.GET.get('search', '').strip()
         if search_query:
             users = users.filter(
@@ -177,16 +176,15 @@ def user_list_dashboard(request, app_id):
                 Q(email__icontains=search_query) |
                 Q(name__icontains=search_query)
             )
-        # Pagination
         paginator = Paginator(users, 10)
         page_number = request.GET.get('page')
         page_obj = paginator.get_page(page_number)
         return render(request, 'auth_service/user_list.html', {
             'app': app,
             'users': page_obj,
-            'page_obj': page_obj,  # Add this for pagination controls
+            'page_obj': page_obj,
             'search_query': search_query,
-            'total_users': paginator.count,  # Add total count
+            'total_users': paginator.count,
         })
     except App.DoesNotExist:
         messages.error(request, 'Invalid app or access denied.')
@@ -259,6 +257,17 @@ def add_auth_config(request, app_id):
 
 @login_required
 def test_oauth_config(request, app_id, config_id):
+    # Rate limiting
+    user_id = request.user.id
+    cache_key = f'oauth_test_user_{user_id}'
+    request_count = cache.get(cache_key, 0)
+
+    if request_count >= 5:
+        messages.error(request, "You have reached the maximum number of test attempts. Please try again later.")
+        return redirect('app_details', app_id=app_id)
+
+    cache.set(cache_key, request_count + 1, 60)  # 60 seconds timeout
+
     config = get_object_or_404(OAuthConfig, id=config_id, app__app_id=app_id, app__developer=request.user)
     request.session['oauth_test_config_id'] = config.id
 
@@ -285,7 +294,7 @@ def test_oauth_config(request, app_id, config_id):
     return redirect(auth_url)
 
 
-@login_required
+@login_.required
 def oauth_callback(request):
     config_id = request.session.get('oauth_test_config_id')
     if not config_id:
@@ -328,9 +337,11 @@ def oauth_callback(request):
             if 'access_token' in response.json():
                 messages.success(request, "GitHub OAuth configuration test successful!")
             else:
-                messages.error(request, f"GitHub OAuth test failed: {response.json().get('error_description')}")
+                logger.error(f"GitHub OAuth test failed for app {app_id}: {response.json()}")
+                messages.error(request, f"GitHub OAuth test failed: {response.json().get('error_description', 'Unknown error')}")
 
     except requests.exceptions.RequestException as e:
-        messages.error(request, f"OAuth test failed: {e}")
+        logger.error(f"OAuth test failed for app {app_id}: {e}")
+        messages.error(request, "An error occurred during the OAuth test. Please check the logs for details.")
 
     return redirect('app_details', app_id=app_id)
