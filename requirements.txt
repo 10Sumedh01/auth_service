@@ -70,3 +70,6 @@ wsproto==1.2.0
 yarl==1.20.1
 zope.event==5.1
 zope.interface==7.2
+mkdocs==1.6.0
+mkdocs-material==9.5.26
+pymdown-extensions==10.8.1
