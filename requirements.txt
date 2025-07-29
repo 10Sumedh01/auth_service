@@ -75,3 +75,4 @@ mkdocs-material==9.5.26
 pymdown-extensions==10.8.1
 mkdocstrings[python]==0.25.1
 whitenoise      # For static files
+dj_database_url==3.0.1
