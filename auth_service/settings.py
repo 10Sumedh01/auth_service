@@ -11,12 +11,15 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-o9comaj$w-r1a(7#6633=yq4)l7)v&gh7ejpv=2i!h@19$pc#d"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+
+# ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -57,10 +60,15 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
-CORS_ORIGIN_ALLOW_ALL = True
-
+# CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ALLOWED_ORIGINS = [
+    "https://auth-service.sumedhwature.life",
+    # Add more origins if needed
+]
 
 ROOT_URLCONF = "auth_service.urls"
 
@@ -129,6 +137,13 @@ DATABASES = {
         ssl_require=True
     )
 }
+ALLOWED_HOSTS = [
+    "auth-service.sumedhwature.life",
+    ".up.railway.app",    # allow Railway subdomains, optional
+    "localhost",
+    "127.0.0.1",
+]
+
 
 # Use persistent connections
 CONN_MAX_AGE = 60  # Keep connections alive for 60 seconds
@@ -209,4 +224,19 @@ CACHES = {
 }
 
 LOGIN_URL = "login"
+
+# Django logging to capture errors in production
 ACCOUNT_LOGOUT_REDIRECT_URL = "/login/"
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'WARNING',
+    },
+}
