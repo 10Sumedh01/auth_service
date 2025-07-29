@@ -1,0 +1,779 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A comprehensive documentation for the Auth Service project.">
+      
+      
+      
+        <link rel="canonical" href="https://github.com/10Sumedh01/auth_service/">
+      
+      
+      
+        <link rel="next" href="api/">
+      
+      
+      <link rel="icon" href="assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.16">
+    
+    
+      
+        <title>Auth Service Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="assets/stylesheets/main.7e37652d.min.css">
+      
+        
+        <link rel="stylesheet" href="assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#project-documentation" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="." title="Auth Service Documentation" class="md-header__button md-logo" aria-label="Auth Service Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Auth Service Documentation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Home
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="api/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  API Reference
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="." title="Auth Service Documentation" class="md-nav__button md-logo" aria-label="Auth Service Documentation" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Auth Service Documentation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="." class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#api-documentation" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Documentation
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API Documentation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-models-auth_apimodelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Data Models (auth_api/models.py)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Models (auth_api/models.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#app" class="md-nav__link">
+    <span class="md-ellipsis">
+      App
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user" class="md-nav__link">
+    <span class="md-ellipsis">
+      User
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apikey" class="md-nav__link">
+    <span class="md-ellipsis">
+      ApiKey
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauthconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      OAuthConfig
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#url-endpoints-auth_apiurlspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      URL Endpoints (auth_api/urls.py)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="URL Endpoints (auth_api/urls.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      Authentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      User Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#application-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      Application Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-key-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      API Key Management
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauth-configuration-management" class="md-nav__link">
+    <span class="md-ellipsis">
+      OAuth Configuration Management
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#views-auth_apiviewspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      Views (auth_api/views.py)
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Views (auth_api/views.py)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#apikeyauthentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      ApiKeyAuthentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauthredirectview-get" class="md-nav__link">
+    <span class="md-ellipsis">
+      OAuthRedirectView (GET)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauthcallbackview-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      OAuthCallbackView (POST)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#credentialssigninview-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      CredentialsSignInView (POST)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#magiclinkview-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      MagicLinkView (POST)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#magiclinkverifyview-get" class="md-nav__link">
+    <span class="md-ellipsis">
+      MagicLinkVerifyView (GET)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#userlistview-get" class="md-nav__link">
+    <span class="md-ellipsis">
+      UserListView (GET)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#applistcreateview-get-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      AppListCreateView (GET, POST)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apikeylistview-get-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      ApiKeyListView (GET, POST)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oauthconfigview-get-post" class="md-nav__link">
+    <span class="md-ellipsis">
+      OAuthConfigView (GET, POST)
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    API Reference
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="project-documentation">Project Documentation</h1>
+<p>This documentation provides a detailed overview of the project's architecture, API, and data models.</p>
+<h2 id="api-documentation">API Documentation</h2>
+<p>This document provides a detailed explanation of the models, URLs, and views used in the <code>auth_api</code> application.</p>
+<h3 id="data-models-auth_apimodelspy">Data Models (<code>auth_api/models.py</code>)</h3>
+<p>The service uses the following Django models to store data:</p>
+<h4 id="app"><code>App</code></h4>
+<p>Represents an application created by a developer.</p>
+<ul>
+<li><code>app_id</code> (CharField): A unique identifier for the application (UUID).</li>
+<li><code>name</code> (CharField): The name of the application.</li>
+<li><code>developer</code> (ForeignKey to <code>User</code>): The developer who owns the application.</li>
+<li><code>created_at</code> (DateTimeField): The timestamp when the application was created.</li>
+<li><strong>Meta:</strong> Ensures that a developer cannot have two apps with the same name.</li>
+</ul>
+<h4 id="user"><code>User</code></h4>
+<p>Represents an end-user of an <code>App</code>.</p>
+<ul>
+<li><code>app</code> (ForeignKey to <code>App</code>): The application to which the user belongs.</li>
+<li><code>user_id</code> (CharField): A unique identifier for the user within the application.</li>
+<li><code>email</code> (EmailField): The user's email address.</li>
+<li><code>name</code> (CharField): The user's name (optional).</li>
+<li><code>auth_method</code> (CharField): The method used for authentication (e.g., <code>oauth</code>, <code>credentials</code>, <code>magic_link</code>).</li>
+<li><code>last_login</code> (DateTimeField): The timestamp of the user's last login (optional).</li>
+<li><code>created_at</code> (DateTimeField): The timestamp when the user was created.</li>
+<li><strong>Meta:</strong> Ensures that an email address is unique per application.</li>
+</ul>
+<h4 id="apikey"><code>ApiKey</code></h4>
+<p>Represents an API key for an <code>App</code>, used for authenticating API requests.</p>
+<ul>
+<li><code>app</code> (ForeignKey to <code>App</code>): The application the API key belongs to.</li>
+<li><code>key</code> (CharField): The API key string (UUID).</li>
+<li><code>created_at</code> (DateTimeField): The timestamp when the key was created.</li>
+<li><code>is_active</code> (BooleanField): Indicates if the key is currently active.</li>
+</ul>
+<h4 id="oauthconfig"><code>OAuthConfig</code></h4>
+<p>Stores OAuth configuration for an <code>App</code> and a specific provider.</p>
+<ul>
+<li><code>app</code> (ForeignKey to <code>App</code>): The application this configuration belongs to.</li>
+<li><code>provider</code> (CharField): The OAuth provider (e.g., <code>github</code>, <code>google</code>).</li>
+<li><code>client_id</code> (CharField): The OAuth client ID.</li>
+<li><code>client_secret</code> (CharField): The OAuth client secret.</li>
+<li><code>redirect_uri</code> (URLField): The callback URL for the OAuth flow.</li>
+<li><code>created_at</code> (DateTimeField): The timestamp when the configuration was created.</li>
+<li><strong>Meta:</strong> Ensures that there is only one configuration per provider for each app.</li>
+</ul>
+<hr />
+<h3 id="url-endpoints-auth_apiurlspy">URL Endpoints (<code>auth_api/urls.py</code>)</h3>
+<p>The following URL patterns are defined to handle API requests:</p>
+<h4 id="authentication">Authentication</h4>
+<ul>
+<li><code>auth/credentials/&lt;str:app_id&gt;</code> -&gt; <code>CredentialsSignInView</code></li>
+<li><code>auth/magic-link/&lt;str:app_id&gt;</code> -&gt; <code>MagicLinkView</code></li>
+<li><code>auth/verify/&lt;str:app_id&gt;</code> -&gt; <code>MagicLinkVerifyView</code></li>
+<li><code>auth/&lt;str:provider&gt;/&lt;str:app_id&gt;</code> -&gt; <code>OAuthRedirectView</code></li>
+<li><code>auth/callback/&lt;str:provider&gt;/&lt;str:app_id&gt;</code> -&gt; <code>OAuthCallbackView</code></li>
+</ul>
+<h4 id="user-management">User Management</h4>
+<ul>
+<li><code>users/&lt;str:app_id&gt;</code> -&gt; <code>UserListView</code></li>
+</ul>
+<h4 id="application-management">Application Management</h4>
+<ul>
+<li><code>apps/</code> -&gt; <code>AppListCreateView</code></li>
+</ul>
+<h4 id="api-key-management">API Key Management</h4>
+<ul>
+<li><code>apps/&lt;str:app_id&gt;/api-keys</code> -&gt; <code>ApiKeyListView</code></li>
+</ul>
+<h4 id="oauth-configuration-management">OAuth Configuration Management</h4>
+<ul>
+<li><code>apps/&lt;str:app_id&gt;/oauth-configs</code> -&gt; <code>OAuthConfigView</code></li>
+</ul>
+<hr />
+<h3 id="views-auth_apiviewspy">Views (<code>auth_api/views.py</code>)</h3>
+<p>The views handle the logic for each API endpoint.</p>
+<h4 id="apikeyauthentication"><code>ApiKeyAuthentication</code></h4>
+<p>A custom authentication class that validates API keys provided in the <code>Authorization</code> header.</p>
+<h4 id="oauthredirectview-get"><code>OAuthRedirectView</code> (GET)</h4>
+<p>Initiates the OAuth flow by redirecting the user to the provider's authorization page.</p>
+<h4 id="oauthcallbackview-post"><code>OAuthCallbackView</code> (POST)</h4>
+<p>Handles the callback from the OAuth provider, exchanges the authorization code for an access token, retrieves user information, creates or updates the user in the database, and returns a JWT.</p>
+<h4 id="credentialssigninview-post"><code>CredentialsSignInView</code> (POST)</h4>
+<p>Authenticates a user with email and password, creates or updates the user record, and returns a JWT.</p>
+<h4 id="magiclinkview-post"><code>MagicLinkView</code> (POST)</h4>
+<p>Generates a JWT with the user's information, creates a verification link, and emails it to the user.</p>
+<h4 id="magiclinkverifyview-get"><code>MagicLinkVerifyView</code> (GET)</h4>
+<p>Verifies the JWT from the magic link, updates the user's <code>last_login</code> time, and returns the token.</p>
+<h4 id="userlistview-get"><code>UserListView</code> (GET)</h4>
+<p>Requires API key authentication. Returns a list of all users associated with a given <code>app_id</code>.</p>
+<h4 id="applistcreateview-get-post"><code>AppListCreateView</code> (GET, POST)</h4>
+<p>Requires developer authentication.
+-   <strong>GET</strong>: Lists all applications owned by the authenticated developer.
+-   <strong>POST</strong>: Creates a new application for the developer and generates an initial API key.</p>
+<h4 id="apikeylistview-get-post"><code>ApiKeyListView</code> (GET, POST)</h4>
+<p>Requires developer authentication.
+-   <strong>GET</strong>: Lists all API keys for a given <code>app_id</code>.
+-   <strong>POST</strong>: Deactivates all existing API keys and creates a new one.</p>
+<h4 id="oauthconfigview-get-post"><code>OAuthConfigView</code> (GET, POST)</h4>
+<p>Requires developer authentication.
+-   <strong>GET</strong>: Lists all OAuth configurations for a given <code>app_id</code>.
+-   <strong>POST</strong>: Creates a new OAuth configuration for the application.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": ".", "features": ["navigation.tabs", "navigation.sections", "toc.integrate", "navigation.top", "search.suggest", "search.highlight", "content.tabs.link", "content.code.annotation", "content.code.copy"], "search": "assets/javascripts/workers/search.d50fe291.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="assets/javascripts/bundle.50899def.min.js"></script>
+      
+    
+  </body>
+</html>
