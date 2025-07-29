@@ -1,38 +1,44 @@
-name: Deploy Documentation
+name: Deploy Docs to GitHub Pages
 
-# Controls when the action will run.
-# This action runs on pushes to the main branch.
+# Run on pushes to the main branch
 on:
   push:
     branches:
       - main
 
+# Allow this job to clone the repo and create a page deployment
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  deploy:
-    # The type of runner that the job will run on
+  build:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
+      - name: Checkout your repository
+        uses: actions/checkout@v4
 
-      # Sets up Python
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: 3.x
 
-      # Installs the documentation generator and theme
       - name: Install dependencies
-        run: |
-          pip install mkdocs-material pymdown-extensions
+        run: pip install mkdocs-material pymdown-extensions
 
-      # Builds the documentation and deploys it to the gh-pages branch
-      - name: Deploy
-        run: |
-          mkdocs gh-deploy --force
+      - name: Build the MkDocs site
+        run: mkdocs build
+
+      - name: Upload the site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
