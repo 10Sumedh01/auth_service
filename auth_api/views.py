@@ -74,6 +74,12 @@ class ApiKeyAuthentication(BaseAuthentication):
 
 # OAuth Redirect: Initiates OAuth flow (e.g., GitHub)
 class OAuthRedirectView(APIView):
+    """
+    Initiates the OAuth 2.0 authentication flow.
+
+    This view constructs the appropriate authorization URL for a given provider
+    (e.g., GitHub) and redirects the user to it.
+    """
     def get(self, request, provider, app_id):
         try:
             cache_key = f"oauth_config:{app_id}:{provider}"
@@ -103,6 +109,13 @@ class OAuthRedirectView(APIView):
 
 # OAuth Callback: Handles OAuth callback, stores user, issues JWT, then redirects
 class OAuthCallbackView(APIView):
+    """
+    Handles the callback from the OAuth 2.0 provider.
+
+    This view receives the authorization code from the provider, exchanges it
+    for an access token, fetches the user's profile information, creates or
+    updates the user in the database, and finally issues a JWT.
+    """
     def get(self, request, provider, app_id):
         try:
             cache_key = f"oauth_config:{app_id}:{provider}"
@@ -192,6 +205,13 @@ class OAuthCallbackView(APIView):
 
 
 class CredentialsSignUpView(APIView):
+    """
+    Handles user sign-up with email and password.
+
+    This view creates a new user account for a given application, provided
+    the email is not already in use for that app. It returns a JWT upon
+    successful registration.
+    """
     authentication_classes = [ApiKeyAuthentication]
 
     def post(self, request, app_id):
@@ -255,6 +275,12 @@ class CredentialsSignUpView(APIView):
 
 # Credentials Sign-In: Handles email/password login
 class CredentialsSignInView(APIView):
+    """
+    Handles user sign-in with email and password.
+
+    This view authenticates a user against their stored credentials for a
+    given application. It returns a JWT upon successful authentication.
+    """
     authentication_classes = [ApiKeyAuthentication]
 
     def post(self, request, app_id):
@@ -291,6 +317,12 @@ class CredentialsSignInView(APIView):
 
 # Magic Link: Sends email link, verifies, issues JWT
 class MagicLinkView(APIView):
+    """
+    Initiates the magic link authentication flow.
+
+    This view generates a single-use sign-in link for a user and sends it to
+    their email address. It creates the user if they do not already exist.
+    """
     authentication_classes = [ApiKeyAuthentication]
 
     def post(self, request, app_id):
@@ -339,6 +371,13 @@ class MagicLinkView(APIView):
 
 # Magic Link Verification: Verifies token, updates last_login, returns JWT
 class MagicLinkVerifyView(APIView):
+    """
+    Verifies a magic link token.
+
+    This view validates the token sent to a user's email. If the token is
+    valid, it updates the user's last login time and returns the token to
+    complete the sign-in process.
+    """
     def get(self, request, app_id):
         try:
             token = request.query_params.get("token")
@@ -368,6 +407,12 @@ class MagicLinkVerifyView(APIView):
 
 # Check User Login: Checks if a user is logged in
 class CheckUserLoginView(APIView):
+    """
+    Checks the login status of a user.
+
+    This view provides a simple way to check if a user is considered to be
+    logged in, based on their last login time.
+    """
     authentication_classes = [ApiKeyAuthentication]
 
     def get(self, request, app_id, user_id):

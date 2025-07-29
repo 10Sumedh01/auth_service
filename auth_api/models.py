@@ -5,6 +5,12 @@ import uuid
 
 # App that developers can create to manage their users and API keys, each app has a unique ID
 class App(models.Model):
+    """
+    Represents an application created by a developer.
+
+    Each app has a unique ID and serves as a container for its own set of
+    users, API keys, and authentication configurations.
+    """
     app_id = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
     name = models.CharField(max_length=200)
     developer = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -19,6 +25,12 @@ class App(models.Model):
 
 # User model representing users of the app,
 class User(models.Model):
+    """
+    Represents an end-user of a specific App.
+
+    Each user is scoped to a single application and can have various
+    authentication methods. Their email address must be unique within the app.
+    """
     app = models.ForeignKey(App, on_delete=models.CASCADE, related_name="users")
     user_id = models.CharField(max_length=100)
     email = models.EmailField()
@@ -46,6 +58,12 @@ class User(models.Model):
 
 # Unique API key for specific app, used for authenticating
 class ApiKey(models.Model):
+    """
+    Represents a unique API key for a specific App.
+
+    API keys are used to authenticate requests made to the service on behalf
+    of an application.
+    """
     app = models.ForeignKey(App, on_delete=models.CASCADE, related_name="api_keys")
     key = models.CharField(max_length=200, unique=True, default=uuid.uuid4)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -57,6 +75,12 @@ class ApiKey(models.Model):
 
 # Authentication configuration for OAuth providers like GitHub or Google
 class OAuthConfig(models.Model):
+    """
+    Stores OAuth 2.0 configuration for an App and a specific provider.
+
+    This model holds the client ID, client secret, and redirect URI required
+    to perform OAuth flows with providers like GitHub or Google.
+    """
     app = models.ForeignKey(App, on_delete=models.CASCADE, related_name="oauth_configs")
     provider = models.CharField(
         max_length=50,
